@@ -169,48 +169,79 @@ fraction fraction::root(fraction first, int second)
     return value;
 }
 
+
+
 int fraction::root(int first, int second)
 {
-    throw std::runtime_error("int fraction::root(int first, int second) -> (not implemented)");
+    // TODO
 
-    if((first == 1) || (second == 0))
+    if(second == 0)
         return 1;
 
-    if(first == 0)
-        return 0;
+    //    if(first == 0)
+    //        return 0;
 
-    if(first < 0)
-        throw std::runtime_error("int fraction::root(int first, int second) -> (first < 0)");
+    if(first < 0 && (!second) & 1)
+        throw std::runtime_error("int fraction::root(int first, int second) -> (first < 0  && (!second) & 1)");
 
     if(second < 0)
         throw std::runtime_error("int fraction::root(int first, int second) -> (second < 0)");
 
-    int value_min = 1;
-    int value_max = __INT_MAX__;
-    int value = value_min;
+    int value_min = -100; // - __INT_MAX__;
+    int value_max = 100; // __INT_MAX__;
+    int value = 1;
 
+    int result_min = 1;
+    int result_max = 1;
+    int result = 1;
 
+    int i = second;
+    while(i-- > 0)
+    {
+        result_min *= value_min;
+        result_max *= value_max;
+    }
 
     bool flag = true;
 
     while(flag)
     {
-        flag = false;
+        //flag = false;
 
-        int i = second;
-
+        result = 1;
+        value = (value_max + value_min) / 2;
+        i = second;
         while(i-- > 0)
-            value *= first;
+            result *= value;
 
-//        if ()
+        if (first < result)
+        {
+            value_max = value;
+            result_max = result;
+            continue;
+        }
+        else if (first > result)
+        {
+            value_min = value;
+            result_min = result;
+            continue;
+        }
+        else
+        {
+            return value;
+        }
     }
 
     return value;
 
+    throw std::runtime_error("int fraction::root(int first, int second) -> (not implemented)");
 
-//    value.denominator = first.denominator * second.denominator;
 
-//    value.numerator = first.numerator * second.numerator;
+
+
+    //    value.denominator = first.denominator * second.denominator;
+
+    //    value.numerator = first.numerator * second.numerator;
 
     return value;
 }
