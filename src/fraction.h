@@ -1,29 +1,43 @@
-#ifndef FRACTION_H
-#define FRACTION_H
+/**
+ *   integer_math
+ *   created by Ilya Shishkin
+ *   cortl@8iter.ru
+ *   https://github.com/cortl0/integer_math
+ *   licensed by GPL v3.0
+ */
+
+#ifndef INTEGER_MATH_FRACTION_H
+#define INTEGER_MATH_FRACTION_H
 
 #include <string>
-#include <stdexcept>
 
-struct fraction
+namespace integer_math
+{
+
+struct fraction final
 {
     int denominator;
     int numerator;
-    fraction();
-    fraction(int numerator, int denominator);
-    static fraction difference(fraction first, fraction second);
-    static fraction division(fraction first, fraction second);
-    static fraction multiplication(fraction first, fraction second);
-    static fraction pow(fraction first, fraction second);
-    static void reduce(fraction&);
+    fraction() = default;
+    explicit fraction(int numerator, int denominator);
+    static fraction difference(const fraction &first, const fraction &second);
+    static fraction division(const fraction &first, const fraction &second);
+    static fraction multiplication(const fraction &first, const fraction &second);
+    static fraction pow(const fraction &first, const fraction &second);
+    static fraction reduce(const fraction&);
+    static fraction reduce_force(const fraction&, int depth);
     static fraction reciprocal(fraction);
-    static fraction root(fraction first, fraction second);
-    static fraction sum(fraction first, fraction second);
-    std::string to_string();
+    static fraction root(const fraction &first, const fraction &second);
+    static fraction sum(const fraction &first, const fraction &second);
+    std::string to_string() const;
+
 private:
-    static fraction pow(fraction first, int second);
+    static fraction pow(const fraction &first, int second);
     static int pow(int first, int second);
-    static fraction root(fraction first, int second);
+    static fraction root(const fraction &first, int second);
     static int root(int first, int second);
 };
 
-#endif // FRACTION_H
+} // integer_math
+
+#endif // INTEGER_MATH_FRACTION_H

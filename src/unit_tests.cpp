@@ -1,4 +1,18 @@
+/**
+ *   integer_math
+ *   created by Ilya Shishkin
+ *   cortl@8iter.ru
+ *   https://github.com/cortl0/integer_math
+ *   licensed by GPL v3.0
+ */
+
+#include <cassert>
+#include <iostream>
+
+#include "fraction.h"
 #include "unit_tests.h"
+
+#define imf integer_math::fraction
 
 unit_tests::unit_tests()
 {
@@ -6,6 +20,7 @@ unit_tests::unit_tests()
     test_division();
     test_multiplication();
     test_reduce();
+    test_reduce_force();
     test_root();
     test_sum();
 
@@ -14,79 +29,88 @@ unit_tests::unit_tests()
 
 void unit_tests::test_difference()
 {
-    fraction first(1, 2);
-    fraction second(1, 3);
-
-    fraction third = fraction::difference(first, second);
-
-    assert(6 == third.denominator);
-    assert(1 == third.numerator);
+    {
+        imf value = imf::difference(imf(1, 2), imf(1, 3));
+        assert(1 == value.numerator);
+        assert(6 == value.denominator);
+    }
+    {
+        imf value = imf::difference(imf(1, -2), imf(1, 3));
+        assert(5 == value.numerator);
+        assert(-6 == value.denominator);
+    }
+    {
+        imf value = imf::difference(imf(1, 2), imf(1, -3));
+        assert(-5 == value.numerator);
+        assert(-6 == value.denominator);
+    }
+    {
+        imf value = imf::difference(imf(-1, 2), imf(1, 3));
+        assert(-5 == value.numerator);
+        assert(6 == value.denominator);
+    }
+    {
+        imf value = imf::difference(imf(1, 2), imf(-1, 3));
+        assert(5 == value.numerator);
+        assert(6 == value.denominator);
+    }
+    {
+        imf value = imf::difference(imf(-2, -3), imf(-5, -7));
+        assert(-1 == value.numerator);
+        assert(21 == value.denominator);
+    }
 }
 
 void unit_tests::test_division()
 {
-    fraction first(1, 2);
-    fraction second(3, 4);
-
-    fraction third = fraction::division(first, second);
-
-    assert(6 == third.denominator);
-    assert(4 == third.numerator);
+    imf value = imf::division(imf(1, 2), imf(3, 4));
+    assert(4 == value.numerator);
+    assert(6 == value.denominator);
 }
 
 void unit_tests::test_multiplication()
 {
-    fraction first(1, 2);
-    fraction second(3, 4);
-
-    fraction third = fraction::multiplication(first, second);
-
-    assert(8 == third.denominator);
-    assert(3 == third.numerator);
+    imf value = imf::multiplication(imf(1, 2), imf(3, 4));
+    assert(3 == value.numerator);
+    assert(8 == value.denominator);
 }
 
 void unit_tests::test_reduce()
 {
-    fraction value(8, 16);
-
-    fraction::reduce(value);
-
-    assert(2 == value.denominator);
+    imf value = imf::reduce(imf(8, 16));
     assert(1 == value.numerator);
+    assert(2 == value.denominator);
+}
+
+void unit_tests::test_reduce_force()
+{
+    imf value = imf::reduce_force(imf(8, 16), 2);
+    assert(2 == value.numerator);
+    assert(4 == value.denominator);
 }
 
 void unit_tests::test_root()
 {
     {
-        fraction first(4, 1);
-        fraction second(2, 1);
-        fraction third = fraction::root(first, second);
-        assert(1 == third.denominator);
-        assert(2 == third.numerator);
+        imf value = imf::root(imf(4, 1), imf(2, 1));
+        assert(2 == value.numerator);
+        assert(1 == value.denominator);
     }
     {
-        fraction first = fraction(25, 9);
-        fraction second = fraction(2, 1);
-        fraction third = fraction::root(first, second);
-        assert(3 == third.denominator);
-        assert(5 == third.numerator);
+        imf value = imf::root(imf(25, 9), imf(2, 1));
+        assert(5 == value.numerator);
+        assert(3 == value.denominator);
     }
     {
-        fraction first = fraction(2, 4);
-        fraction second = fraction(2, 4);
-        fraction third = fraction::root(first, second);
-        assert(16 == third.denominator);
-        assert(4 == third.numerator);
+        imf value = imf::root(imf(2, 4), imf(2, 4));
+        assert(4 == value.numerator);
+        assert(16 == value.denominator);
     }
 }
 
 void unit_tests::test_sum()
 {
-    fraction first(1, 2);
-    fraction second(1, 3);
-
-    fraction third = fraction::sum(first, second);
-
-    assert(6 == third.denominator);
-    assert(5 == third.numerator);
+    imf value = imf::sum(imf(1, 2), imf(1, 3));
+    assert(5 == value.numerator);
+    assert(6 == value.denominator);
 }

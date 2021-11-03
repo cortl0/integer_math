@@ -1,45 +1,52 @@
+/**
+ *   integer_math
+ *   created by Ilya Shishkin
+ *   cortl@8iter.ru
+ *   https://github.com/cortl0/integer_math
+ *   licensed by GPL v3.0
+ */
+
+#include <stdexcept>
+
 #include "fraction.h"
 
-
-fraction::fraction()
+namespace integer_math
 {
-
-}
 
 fraction::fraction(int numerator, int denominator)
+    : denominator(denominator), numerator(numerator)
 {
-    this->numerator = numerator;
-    this->denominator = denominator;
+
 }
 
-fraction fraction::difference(fraction first, fraction second)
+fraction fraction::difference(const fraction &first, const fraction &second)
 {
     fraction value;
 
-    value.denominator = first.denominator * second.denominator;
-
     value.numerator = (first.numerator * second.denominator) - (second.numerator * first.denominator);
+
+    value.denominator = first.denominator * second.denominator;
 
     return value;
 }
 
-fraction fraction::division(fraction first, fraction second)
+fraction fraction::division(const fraction &first, const fraction &second)
 {
     return multiplication(first, reciprocal(second));
 }
 
-fraction fraction::multiplication(fraction first, fraction second)
+fraction fraction::multiplication(const fraction &first, const fraction &second)
 {
     fraction value;
 
-    value.denominator = first.denominator * second.denominator;
-
     value.numerator = first.numerator * second.numerator;
+
+    value.denominator = first.denominator * second.denominator;
 
     return value;
 }
 
-fraction fraction::pow(fraction first, fraction second)
+fraction fraction::pow(const fraction &first, const fraction &second)
 {
     fraction value;
 
@@ -55,23 +62,26 @@ fraction fraction::reciprocal(fraction value)
     return fraction(value.denominator, value.numerator);
 }
 
-void fraction::reduce(fraction& value)
+fraction fraction::reduce(const fraction& value)
 {
+    fraction result(value);
+
     bool flag = true;
 
     while(flag)
     {
-        if((value.numerator == 0) && (value.denominator == 0))
+        if((result.numerator == 0) && (result.denominator == 0))
             break;
 
-        if(value.numerator == 0)
+        if(result.numerator == 0)
         {
-            value.denominator = 1;
+            result.denominator = 1;
+
             break;
         }
 
         //??
-        if(value.denominator == 0)
+        if(result.denominator == 0)
         {
             // throw error
             //throw std::exception();
@@ -80,51 +90,70 @@ void fraction::reduce(fraction& value)
             //value.numerator = __INT_MAX__;
 
             // -> 1
-            value.numerator = 1;
+            result.numerator = 1;
 
             break;
         }
 
         flag = false;
 
-        if(((value.numerator & 1) == 0) && ((value.denominator & 1) == 0))
+        if(((result.numerator & 1) == 0) && ((result.denominator & 1) == 0))
         {
-            value.numerator >>= 1;
-            value.denominator >>= 1;
+            result.numerator >>= 1;
+
+            result.denominator >>= 1;
+
             flag = true;
+
             continue;
         }
 
         static int num[] = {3, 5, 7};
 
         for(int i = 0; i < 3; i++)
-            if(((value.numerator % num[i]) == 0) && ((value.denominator % num[i]) == 0))
+            if(((result.numerator % num[i]) == 0) && ((result.denominator % num[i]) == 0))
             {
-                value.numerator /= num[i];
-                value.denominator /= num[i];
+                result.numerator /= num[i];
+
+                result.denominator /= num[i];
+
                 flag = true;
+
                 continue;
             }
     }
+
+    return result;
 }
 
-fraction fraction::root(fraction first, fraction second)
+fraction fraction::reduce_force(const fraction &value, int depth)
+{
+    fraction result;
+
+    result.numerator = (value.numerator >> depth);
+
+    result.denominator = (value.denominator >> depth);
+
+    return result;
+}
+
+fraction fraction::root(const fraction &first, const fraction &second)
 {
     return pow(first, reciprocal(second));
 }
 
-fraction fraction::sum(fraction first, fraction second)
+fraction fraction::sum(const fraction &first, const fraction &second)
 {
     fraction value;
 
-    value.denominator = first.denominator * second.denominator;
-
     value.numerator = (first.numerator * second.denominator) + (second.numerator * first.denominator);
+
+    value.denominator = first.denominator * second.denominator;
 
     return value;
 }
 
-std::string fraction::to_string()
+std::string fraction::to_string() const
 {
     std::string value(std::to_string(numerator));
 
@@ -137,19 +166,34 @@ std::string fraction::to_string()
 
 // *********** private: ***********
 
-fraction fraction::pow(fraction first, int second)
+fraction fraction::pow(const fraction &first, int second)
 {
-    fraction value;
+    fraction value(first);
 
-    value.denominator = pow(first.denominator, second);
+    if(second < 0)
+    {
+        value = reciprocal(value);
+
+        second = -second;
+    }
 
     value.numerator = pow(first.numerator, second);
+
+    value.denominator = pow(first.denominator, second);
 
     return value;
 }
 
 int fraction::pow(int first, int second)
 {
+    // TODO ??
+
+    if(second < 0)
+        throw std::runtime_error("int fraction::pow(int first, int second) -> (second < 1)");
+
+    if(0 == first && 0 == second)
+        throw std::runtime_error("int fraction::pow(int first, int second) -> (0 == first && 0 == second)");
+
     int value = 1;
 
     while(second-- > 0)
@@ -158,34 +202,39 @@ int fraction::pow(int first, int second)
     return value;
 }
 
-fraction fraction::root(fraction first, int second)
+fraction fraction::root(const fraction &first, int second)
 {
     fraction value;
 
-    value.denominator = root(first.denominator, second);
+    if(second < 0)
+    {
+        value = reciprocal(value);
+
+        second = -second;
+    }
 
     value.numerator = root(first.numerator, second);
 
+    value.denominator = root(first.denominator, second);
+
     return value;
 }
-
-
 
 int fraction::root(int first, int second)
 {
     // TODO
 
-    if(second == 0)
-        return 1;
+    if(second < 1)
+        throw std::runtime_error("int fraction::root(int first, int second) -> (second < 1)");
 
-    //    if(first == 0)
-    //        return 0;
+//    if(1 == first)
+//        return first;
 
-    if(first < 0 && (!second) & 1)
-        throw std::runtime_error("int fraction::root(int first, int second) -> (first < 0  && (!second) & 1)");
+//    if(1 == second)
+//        return first;
 
-    if(second < 0)
-        throw std::runtime_error("int fraction::root(int first, int second) -> (second < 0)");
+    if(first < 0 && second & 1)
+        throw std::runtime_error("int fraction::root(int first, int second) -> (first < 0  && second & 1)");
 
     int value_min = -100; // - __INT_MAX__;
     int value_max = 100; // __INT_MAX__;
@@ -245,3 +294,5 @@ int fraction::root(int first, int second)
 
     return value;
 }
+
+} // integer_math
